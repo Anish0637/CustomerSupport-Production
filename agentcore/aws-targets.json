@@ -1,0 +1,8 @@
+[
+  {
+    "name": "default",
+    "description": "Default AWS deployment target",
+    "account": "582766763952",
+    "region": "us-east-1"
+  }
+]
