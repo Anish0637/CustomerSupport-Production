@@ -69,10 +69,17 @@ def _get_runtime_arn() -> str:
     )
     try:
         data = json.loads(state_path.read_text())
-        agents = data.get("agents", {})
-        runtime_id = next(iter(agents.values()), {}).get("runtimeId", "")
-        acct = data.get("account", "000000000000")
-        return f"arn:aws:bedrock-agentcore:{settings.region}:{acct}:runtime/{runtime_id}"
+        runtimes = (
+            data.get("targets", {})
+                .get("default", {})
+                .get("resources", {})
+                .get("runtimes", {})
+        )
+        runtime = next(iter(runtimes.values()), {})
+        arn = runtime.get("runtimeArn", "")
+        if arn:
+            return arn
+        raise ValueError("runtimeArn not found in deployed-state.json")
     except Exception as exc:
         logger.warning('"Could not read deployed-state.json: %s"', exc)
         return "arn:aws:bedrock-agentcore:us-east-1:000000000000:runtime/unknown"
@@ -175,12 +182,12 @@ async def index(request: Request) -> HTMLResponse:
                 "scope": "openid email profile",
             })
         )
-        return templates.TemplateResponse("login.html", {"request": request, "login_url": login_url})
+        return templates.TemplateResponse(request, "login.html", {"login_url": login_url})
 
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "runtime_arn": _get_runtime_arn(),
             "username": request.session.get("username", "user"),
         },
