@@ -17,6 +17,7 @@ import json
 import logging
 import re
 import uuid
+from pathlib import Path
 from urllib.parse import quote, urlencode
 
 import httpx
@@ -52,7 +53,7 @@ app.add_middleware(
     max_age=3600,
 )
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 THINKING_RE = re.compile(r"<thinking>.*?</thinking>", re.DOTALL)
 
 
@@ -60,8 +61,6 @@ THINKING_RE = re.compile(r"<thinking>.*?</thinking>", re.DOTALL)
 # Helpers
 # ---------------------------------------------------------------------------
 def _get_runtime_arn() -> str:
-    from pathlib import Path
-
     state_path = (
         Path(__file__).parent
         .parent.parent.parent

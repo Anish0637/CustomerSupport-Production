@@ -1,0 +1,38 @@
+# docker-compose for local development of the CustomerSupport frontend.
+#
+# The AgentCore runtime is NOT run here — it is deployed to AWS via:
+#   agentcore deploy  (or  agentcore dev  for local testing with live AWS resources)
+#
+# Usage:
+#   cp app/CustomerSupport/frontend/.env.local.example app/CustomerSupport/frontend/.env
+#   # edit .env with your values
+#   docker compose up --build
+
+services:
+  frontend:
+    build:
+      context: ./app/CustomerSupport
+      dockerfile: frontend/Dockerfile
+    image: customersupport-frontend:local
+    container_name: cs-frontend
+    ports:
+      - "8501:8501"
+    env_file:
+      - ./app/CustomerSupport/frontend/.env      # local overrides (git-ignored)
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8501"
+      DEBUG: "false"
+      HTTPS_ONLY: "false"
+    volumes:
+      # Mount deployed-state.json so the frontend can resolve the runtime ARN
+      - ./agentcore/.cli/deployed-state.json:/app/agentcore/.cli/deployed-state.json:ro
+      # Mount source for hot-reload during development (comment out for prod)
+      - ./app/CustomerSupport/frontend:/app/frontend:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
