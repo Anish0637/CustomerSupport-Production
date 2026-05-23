@@ -61,6 +61,11 @@ THINKING_RE = re.compile(r"<thinking>.*?</thinking>", re.DOTALL)
 # Helpers
 # ---------------------------------------------------------------------------
 def _get_runtime_arn() -> str:
+    # Fast path: env var set directly (production / Docker)
+    if settings.runtime_arn:
+        return settings.runtime_arn
+
+    # Slow path: read from agentcore CLI state file (local dev without Docker)
     state_path = (
         Path(__file__).parent
         .parent.parent.parent

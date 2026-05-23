@@ -32,5 +32,8 @@ class Settings(BaseSettings):
     aws_profile: Optional[str] = None
     aws_default_region: str = "us-east-1"
 
+    # AgentCore — set this in production to skip deployed-state.json file lookup
+    runtime_arn: Optional[str] = None
+
 
 settings = Settings()

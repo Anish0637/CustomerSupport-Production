@@ -24,9 +24,11 @@ services:
       PORT: "8501"
       DEBUG: "false"
       HTTPS_ONLY: "false"
+      # Inject runtime ARN directly so the container doesn't need the state file
+      RUNTIME_ARN: "${RUNTIME_ARN:-}"
     volumes:
-      # Mount deployed-state.json so the frontend can resolve the runtime ARN
-      - ./agentcore/.cli/deployed-state.json:/app/agentcore/.cli/deployed-state.json:ro
+      # Mount the whole .cli dir (single-file mounts are unreliable on Docker Desktop/macOS)
+      - ./agentcore/.cli:/agentcore/.cli:ro
       # Mount source for hot-reload during development (comment out for prod)
       - ./app/CustomerSupport/frontend:/app/frontend:ro
     healthcheck:
